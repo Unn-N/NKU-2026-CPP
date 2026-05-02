@@ -1,41 +1,27 @@
-# Prerequisites
-*.d
+# 编译构建目录
+build/
+Build/
+debug/
+release/
 
-# Compiled Object files
-*.slo
-*.lo
+# Qt 工程本地配置
+*.user
+*.user.*
+*.pro.user
+
+# 二进制、可执行文件
+*.exe
+*.dll
 *.o
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
 *.pdb
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
+*.ilk
+*.exp
 *.lib
 
-# Executables
-*.exe
-*.out
-*.app
-
-# debug information files
-*.dwo
+# 临时、缓存、垃圾文件
+*.log
+*.tmp
+*.bak
+.DS_Store
+__pycache__/
