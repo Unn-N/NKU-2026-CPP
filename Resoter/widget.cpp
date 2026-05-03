@@ -2,6 +2,8 @@
 #include "ui_widget.h"
 #include<QPainter>
 #include<QMouseEvent>
+#include<cmath>
+#include <algorithm>
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
@@ -48,63 +50,99 @@ void Widget::paintEvent(QPaintEvent *event)
 
 void Widget::mousePressEvent(QMouseEvent *event)
 {
-    // 只处理左键点击
-    if(event->button() == Qt::LeftButton)
+    if(event->button() != Qt::LeftButton) return;
+    selectedItem = nullptr;
+
+    for(auto it = itemList.rbegin(); it != itemList.rend(); ++it)
     {
-        // 从后往前遍历，这样上面的矩形会优先被选中
-        for(auto it = itemList.rbegin(); it != itemList.rend(); ++it)
+        Rectitem* bar = *it;
+        if(event->x() >= bar->x && event->x() <= bar->x + bar->width &&
+            event->y() >= bar->y && event->y() <= bar->y + bar->height)
         {
-            Rectitem* bar = *it;
-            // 判断鼠标是否点中了矩形
-            if(event->x() >= bar->x && event->x() <= bar->x + bar->width &&
-                event->y() >= bar->y && event->y() <= bar->y + bar->height)
-            {
-                selectedItem = bar;
-                // 计算偏移量：鼠标X坐标 - 矩形X坐标
-                dragOffsetX = event->x() - bar->x;
-                break;
-            }
+            selectedItem = bar;
+            dragOffsetX = event->x() - bar->x;
+            break;
         }
     }
 }
 
 void Widget::mouseMoveEvent(QMouseEvent *event)
 {
-    if(selectedItem != nullptr)
-    {
-        // 只改变X坐标，保持Y坐标不变，这样只会左右拖动
-        selectedItem->x = event->x() - dragOffsetX;
-        // 强制重绘窗口，让矩形位置立刻更新
-        update();
+    if (!selectedItem) return;
+
+    // 1. 跟随鼠标（保持不变）
+    selectedItem->x = event->x() - dragOffsetX;
+
+    QList<int> positions = {30, 100, 170, 240, 310, 380};
+
+    // ========================
+    // 核心修复：计算【拖动矩形的中心点】
+    // ========================
+    int currentCenter = selectedItem->x + selectedItem->width / 2;
+
+    // 2. 根据【中心点】判断应该在第几个索引位置
+    int targetIndex = 0;
+    for (int i = 0; i < positions.size(); i++) {
+        // 目标位置的中心点
+        int slotCenter = positions[i] + selectedItem->width / 2;
+        if (currentCenter >= slotCenter) {
+            targetIndex = i;
+        } else {
+            break;
+        }
     }
+
+    // 3. 重新排序队列
+    QList<Rectitem*> sortedList = itemList;
+    sortedList.removeOne(selectedItem);
+    sortedList.insert(targetIndex, selectedItem);
+
+    // 4. 其他矩形实时让位（只动别人）
+    for (int i = 0; i < sortedList.size(); i++) {
+        if (sortedList[i] != selectedItem) {
+            sortedList[i]->x = positions[i];
+        }
+    }
+
+    update();
 }
 
 void Widget::mouseReleaseEvent(QMouseEvent *event)
 {
-    if(event->button() == Qt::LeftButton)
+    if(event->button() != Qt::LeftButton || !selectedItem)
     {
-        if (selectedItem != nullptr) {
-            //6个固定位置
-            QList<int> positions = {30, 100, 170, 240, 310, 380};
-
-            // 找到离当前矩形最近的固定位置
-            int bestPos = positions[0];
-            int minDist = abs(selectedItem->x - bestPos);
-
-            for (int pos : positions) {
-                int dist = abs(selectedItem->x - pos);
-                if (dist < minDist) {
-                    minDist = dist;
-                    bestPos = pos;
-                }
-            }
-
-            // 自动吸附过去
-            selectedItem->x = bestPos;
-            update(); // 刷新画面
-        }
-
         selectedItem = nullptr;
+        return;
     }
+
+    QList<int> slot = {30,100,170,240,310,380};
+    QList<Rectitem*> sorted = itemList;
+    std::sort(sorted.begin(), sorted.end(),
+              [](Rectitem*a, Rectitem*b){ return a->x < b->x; });
+
+    // 全部整齐归位
+    for(int i = 0; i < sorted.size(); ++i)
+    {
+        sorted[i]->x = slot[i];
+    }
+
+    selectedItem = nullptr;
+    update();
 }
 
+// 统一排列所有矩形：吸附、避让、排序全在这里
+void Widget::rearrangeAllItems()
+{
+    QList<int> positions = {30, 100, 170, 240, 310, 380};
+
+    // 按当前X坐标排序
+    QList<Rectitem*> sorted = itemList;
+    std::sort(sorted.begin(), sorted.end(), [](Rectitem* a, Rectitem* b) {
+        return a->x < b->x;
+    });
+
+    // 一次性给所有矩形分配固定位置
+    for (int i = 0; i < sorted.size(); i++) {
+        sorted[i]->x = positions[i];
+    }
+}

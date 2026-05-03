@@ -25,6 +25,7 @@ private:
     QList<Rectitem*> itemList;
     Rectitem* selectedItem = nullptr; // 正在拖动的矩形
     int dragOffsetX; // 鼠标在矩形内部的偏移
+    void rearrangeAllItems();
 
 
 protected:
