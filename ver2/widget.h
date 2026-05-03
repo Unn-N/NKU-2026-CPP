@@ -5,11 +5,22 @@
 #include <QList>
 #include <QPropertyAnimation>
 #include <QTimer>
+#include <functional>
 #include "rectitem.h"
+
+enum class Mode { Manual, Bubble, Selection, Insertion };
+
+struct Button {
+    QRectF  rect;
+    QString label;
+    Mode    mode;
+    bool    hovered = false;
+};
 
 class Widget : public QWidget
 {
     Q_OBJECT
+    Q_PROPERTY(qreal victoryAlpha READ getVictoryAlpha WRITE setVictoryAlpha)
 
 public:
     explicit Widget(QWidget *parent = nullptr);
@@ -25,28 +36,43 @@ private:
     QList<Rectitem*> itemList;
     QList<int>       slotPositions;
 
-    Rectitem* selectedItem  = nullptr;
-    int       dragOffsetX   = 0;
+    Rectitem* selectedItem = nullptr;
+    int       dragOffsetX  = 0;
 
     QMap<Rectitem*, QPropertyAnimation*> slideAnimations;
     QMap<Rectitem*, QPropertyAnimation*> colorAnimations;
 
-    // 胜利状态
-    bool  isSorted       = false;   // 是否已完成排序
-    qreal victoryAlpha   = 0.0;     // 胜利文字淡入进度 0~1
+    bool  isSorted     = false;
+    qreal victoryAlpha = 0.0;
     QPropertyAnimation* victoryAnim = nullptr;
-    Q_PROPERTY(qreal victoryAlpha READ getVictoryAlpha WRITE setVictoryAlpha)
     qreal getVictoryAlpha() const { return victoryAlpha; }
     void  setVictoryAlpha(qreal v) { victoryAlpha = v; update(); }
 
+    Mode          currentMode = Mode::Manual;
+    QList<Button> buttons;
+
+    bool algoRunning = false;
+    QList<std::function<void()>> algoSteps;
+    QTimer* stepTimer = nullptr;
+
     void initSlots();
+    void initButtons();
+    void resetBars();
+    void switchMode(Mode m);
+
     void animateSlideTo(Rectitem* item, qreal targetX, int duration = 200);
     void animateColorTo(Rectitem* item, qreal targetBlend, int duration = 180);
+    QColor blendColor(qreal t) const;
+
     void rearrangeOthers();
     int  targetIndexForDrag();
-    QColor blendColor(qreal t) const;
-    void checkSorted();          // 松手后检测是否排好序
-    void triggerVictory();       // 触发胜利动画
+    void checkSorted();
+    void triggerVictory();
+
+    void runAlgoSteps();
+    void buildBubbleSteps();
+    void buildSelectionSteps();
+    void buildInsertionSteps();
 };
 
 #endif // WIDGET_H
