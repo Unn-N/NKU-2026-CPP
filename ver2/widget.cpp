@@ -94,7 +94,7 @@ void Widget::initButtons()
         "冒泡排序",
         "选择排序",
         "插入排序",
-        "基于视觉感知的\n人机协同排序算法"
+        "基于视觉感知与\n人机协同的高准确率排序算法"
     };
     QList<Mode> modes = { Mode::Bubble, Mode::Selection, Mode::Insertion, Mode::Manual };
 
@@ -293,7 +293,7 @@ void Widget::paintEvent(QPaintEvent *event)
         big.setLetterSpacing(QFont::AbsoluteSpacing, 4);
         p.setFont(big);
         p.setPen(QColor(88, 177, 120, (int)(255 * victoryAlpha)));
-        p.drawText(QRectF(0, WIN_H / 2 - 70, WIN_W, 60), Qt::AlignHCenter, "排序完成！");
+        p.drawText(QRectF(0, WIN_H / 2 - 230, WIN_W, 60), Qt::AlignHCenter, "排序完成！");
 
         QFont small = p.font();
         small.setPointSize(13);
@@ -301,7 +301,7 @@ void Widget::paintEvent(QPaintEvent *event)
         small.setLetterSpacing(QFont::AbsoluteSpacing, 2);
         p.setFont(small);
         p.setPen(QColor(120, 160, 130, (int)(220 * victoryAlpha)));
-        p.drawText(QRectF(0, WIN_H / 2 - 10, WIN_W, 40), Qt::AlignHCenter, "从小到大，全部就位 ✓");
+        p.drawText(QRectF(0, WIN_H / 2 - 150, WIN_W, 40), Qt::AlignHCenter, "从小到大，全部就位 ✓");
     }
 }
 
