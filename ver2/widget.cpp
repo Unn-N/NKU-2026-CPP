@@ -293,7 +293,7 @@ void Widget::paintEvent(QPaintEvent *event)
         big.setLetterSpacing(QFont::AbsoluteSpacing, 4);
         p.setFont(big);
         p.setPen(QColor(88, 177, 120, (int)(255 * victoryAlpha)));
-        p.drawText(QRectF(0, WIN_H / 2 - 230, WIN_W, 60), Qt::AlignHCenter, "排序完成！");
+        p.drawText(QRectF(0, WIN_H / 2 - 230, WIN_W, 60), Qt::AlignHCenter, "排序完成");
 
         QFont small = p.font();
         small.setPointSize(13);
